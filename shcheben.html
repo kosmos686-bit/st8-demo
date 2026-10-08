@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>ST8 Логистика щебня</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: пульт диспетчера — заявка слева/сверху, расчёт вариантов, затем контроль рейсов. Палитра продуктов ST8 */
+:root{
+  --bg:#0a0a0a; --panel:#141310; --panel2:#1c1a15; --line:#2c2920;
+  --fg:#f1ede3; --muted:#a39d8c; --gold:#d4af37;
+  --ok:#4fbf7a; --warn:#e0a63a; --bad:#e2574c;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.5}
+.wrap{max-width:900px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+header{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
+h1{font-size:clamp(24px,6vw,34px);line-height:1.15;margin:0;font-weight:800;text-wrap:balance}
+.sub{color:var(--muted);margin:0;max-width:64ch}
+.chain{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:12px;color:var(--muted);margin-top:6px}
+.chain span{border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+.chain i{font-style:normal;color:var(--gold)}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:4px;overflow-x:auto;padding-block:8px;border-bottom:1px solid var(--line);margin-bottom:18px}
+nav button{flex:0 0 auto;background:none;border:0;color:var(--muted);font:600 14px var(--sans);padding:8px 12px;border-radius:8px;cursor:pointer}
+nav button[aria-selected="true"]{color:var(--bg);background:var(--gold)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+h2{font-size:20px;margin:0 0 4px}
+.lead{color:var(--muted);margin:0 0 4px;max-width:64ch}
+.stack{display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);min-width:0}
+select,input{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:9px;font:14px var(--sans);width:100%}
+.note{font-size:12px;color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.reco{border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 8%,var(--panel));border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.reco h3{margin:0;font-size:16px;color:var(--gold)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi b{display:block;font:600 20px var(--mono);font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:620px}
+th{text-align:left;font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;vertical-align:top}
+td.r,th.r{text-align:right}
+.pill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.p-bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,transparent)}
+.p-warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.p-ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 16%,transparent)}
+.p-gold{color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent)}
+.bars{display:flex;flex-direction:column;gap:8px}
+.br{display:grid;grid-template-columns:130px 1fr 72px;gap:8px;align-items:center;font-size:13px}
+.br .track{height:12px;background:var(--panel2);border-radius:4px;overflow:hidden;display:flex}
+.br .track i{display:block;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.alerts{display:flex;flex-direction:column;gap:8px}
+.al{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px}
+.al .pill{margin-top:1px}
+ol.diag{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+ol.diag li{max-width:64ch}
+footer{margin-top:28px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:480px){.br{grid-template-columns:96px 1fr 64px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">ST8 AI · демо для поставщика нерудных материалов</span>
+  <h1>Диспетчерская щебня: от заявки до себестоимости тонны</h1>
+  <p class="sub">AI сопоставляет точки отгрузки, транспорт, плечо и сроки, предлагает диспетчеру лучший вариант и потом следит за отклонениями. Цифры условные, для демонстрации логики.</p>
+  <div class="chain"><span>Заявка</span><i>→</i><span>Материал и объём</span><i>→</i><span>Карьер или ж/д станция</span><i>→</i><span>Транспорт</span><i>→</i><span>Рейсы</span><i>→</i><span>₽/т на объекте</span></div>
+</header>
+
+<nav role="tablist">
+  <button role="tab" aria-selected="true" data-tab="plan">Расчёт заявки</button>
+  <button role="tab" aria-selected="false" data-tab="ctrl">Контроль рейсов</button>
+  <button role="tab" aria-selected="false" data-tab="diag">Диагностика</button>
+</nav>
+
+<!-- PLAN -->
+<section id="plan" class="stack">
+  <div><h2>Новая заявка</h2><p class="lead">Меняйте параметры: расчёт и рекомендация пересчитываются сразу.</p></div>
+  <div class="panel form">
+    <label for="obj">Объект доставки<select id="obj"></select></label>
+    <label for="frac">Материал<select id="frac"><option>Щебень гранитный 20–40</option><option>Щебень гранитный 5–20</option></select></label>
+    <label for="vol">Объём, т<input id="vol" type="number" min="100" step="100" value="1800"></label>
+    <label for="days">Срок, рабочих дней<input id="days" type="number" min="1" max="20" value="3"></label>
+    <label for="own">Своих самосвалов (25 т)<input id="own" type="number" min="1" max="30" value="6"></label>
+  </div>
+
+  <div class="reco" id="reco"></div>
+
+  <div class="panel stack">
+    <strong>Сравнение точек отгрузки</strong>
+    <div class="tbl"><table><thead><tr><th>Источник</th><th class="r">Плечо</th><th class="r">Цена на точке</th><th class="r">Доставка</th><th class="r">Итого ₽/т</th><th class="r">Остаток</th></tr></thead><tbody id="srcBody"></tbody></table></div>
+    <p class="note">Доставка своим транспортом считается по полному циклу: гружёный рейс плюс порожний обратно. Ставка пробега и цены — примерные.</p>
+  </div>
+
+  <div class="panel stack">
+    <strong>Из чего складывается тонна на объекте</strong>
+    <div class="bars" id="bars"></div>
+    <div class="legend"><span><b style="background:var(--muted)"></b>материал</span><span><b style="background:var(--gold)"></b>доставка</span></div>
+  </div>
+</section>
+
+<!-- CONTROL -->
+<section id="ctrl" class="stack" hidden>
+  <div><h2>Контроль исполнения</h2><p class="lead">План заявки сравнивается с фактом по каждому рейсу. AI показывает, где теряются деньги, и пересчитывает фактическую себестоимость тонны. Пример смены.</p></div>
+  <div class="kpis" id="cK"></div>
+  <div class="panel tbl" style="padding:4px 8px"><table><thead><tr><th>Машина</th><th>Рейс</th><th class="r">Тонн</th><th class="r">Ожидание погрузки</th><th class="r">Пробег, км</th><th>Статус</th></tr></thead><tbody id="cBody"></tbody></table></div>
+  <div class="panel stack"><strong>Что AI предлагает диспетчеру</strong><div class="alerts" id="cAl"></div></div>
+</section>
+
+<!-- DIAG -->
+<section id="diag" class="stack" hidden>
+  <div><h2>С чего начинаем</h2><p class="lead">Перед пилотом короткая диагностика текущей схемы, чтобы автоматизировать один процесс с самым большим эффектом, а не всё сразу.</p></div>
+  <div class="panel"><ol class="diag">
+    <li>Как приходят заявки: телефон, мессенджеры, почта, 1С. Сколько заявок в день.</li>
+    <li>Сколько карьеров и ж/д станций в работе, как меняются цены и остатки.</li>
+    <li>Транспорт свой или наёмный, сколько машин, сколько рейсов в сутки.</li>
+    <li>Как сейчас диспетчер распределяет машины и считает себестоимость.</li>
+    <li>Где основная потеря: простой на погрузке, порожний пробег, недогруз, ошибки диспетчеризации или маржа по сделке.</li>
+  </ol></div>
+  <div class="panel stack"><strong>Как обычно выглядит пилот</strong>
+  <p style="margin:0;max-width:64ch">Один процесс, например расчёт заявки и выбор точки отгрузки, на реальных данных за прошлый месяц. Сравниваем, как считал диспетчер и что предложила система, и показываем разницу в рублях на тонну.</p></div>
+</section>
+
+<footer>ST8 AI · st8-ai.ru · Похожая логика уже работает у нас в проекте по распределению заявок и спецтехники. Данные на странице вымышлены.</footer>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const rub=n=>Math.round(n).toLocaleString('ru-RU');
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
+ ['plan','ctrl','diag'].forEach(id=>$('#'+id).hidden=id!==b.dataset.tab)});
+
+/* ---- данные (условные) ---- */
+const KM_COST=95;      // ₽ за км пробега своего самосвала
+const PAYLOAD=25;      // т
+const SPEED=45;        // км/ч средняя
+const LOAD_H=0.6;      // погрузка+разгрузка, ч
+const SHIFT=10;        // ч
+const HIRE_TKM=9;      // ₽ за т·км наёмный транспорт
+const SRC=[
+ {n:'Карьер «Северный»',t:'карьер',price:1150,stock:99999},
+ {n:'Карьер «Липовский»',t:'карьер',price:1050,stock:99999},
+ {n:'Ж/д станция «Восточная», склад',t:'ж/д',price:1380,stock:1200,note:'цена с ж/д тарифом и перевалкой'}
+];
+const OBJ={
+ 'ЖК на Окружной, участок 3':[68,112,24],
+ 'Промзона «Южная», дорога':[41,63,57],
+ 'Коттеджный посёлок «Берёзки»':[95,38,80]
+};
+$('#obj').innerHTML=Object.keys(OBJ).map(o=>`<option>${o}</option>`).join('');
+
+function calc(){
+ const dist=OBJ[$('#obj').value];
+ const vol=Math.max(100,+$('#vol').value||0), days=Math.max(1,+$('#days').value||1), own=Math.max(1,+$('#own').value||1);
+ const opts=SRC.map((s,i)=>{const d=dist[i];const del=2*d*KM_COST/PAYLOAD;const cyc=2*d/SPEED+LOAD_H;
+  return {...s,d,del,total:s.price+del,cyc,tpd:Math.max(1,Math.floor(SHIFT/cyc))}}).sort((a,b)=>a.total-b.total);
+ // жадное распределение по себестоимости с учётом остатков
+ let left=vol;const plan=[];
+ for(const o of opts){if(left<=0)break;const q=Math.min(left,o.stock);plan.push({o,q});left-=q}
+ const truckHours=plan.reduce((s,p)=>s+Math.ceil(p.q/PAYLOAD)*p.o.cyc,0);
+ const capHours=own*SHIFT*days;
+ const trips=plan.reduce((s,p)=>s+Math.ceil(p.q/PAYLOAD),0);
+ let cost=plan.reduce((s,p)=>s+p.q*p.o.total,0);
+ let hireT=0,hireCost=0;
+ if(truckHours>capHours){ // недостающее везём наёмными с ближайшей точки плана
+  const share=1-capHours/truckHours;const far=plan[plan.length-1];
+  hireT=Math.ceil(vol*share/PAYLOAD)*PAYLOAD; if(hireT>far.q)hireT=far.q;
+  const ownDelPerT=far.o.del, hireDelPerT=HIRE_TKM*far.o.d;
+  hireCost=hireT*(hireDelPerT-ownDelPerT); cost+=hireCost;
+ }
+ const perT=cost/vol;
+ const worst=opts[opts.length-1];
+ const naive=opts.find(o=>o.t==='карьер'&&o.d===Math.min(...opts.filter(x=>x.t==='карьер').map(x=>x.d)))||opts[0];
+ const naiveCost=vol*naive.total, save=naiveCost-cost;
+ const needDays=Math.ceil(truckHours/(own*SHIFT));
+
+ $('#reco').innerHTML=`<h3>Рекомендация AI</h3>
+ <div>${plan.map(p=>`<div><b class="mono">${rub(p.q)} т</b> · ${p.o.n} · ${p.o.d} км · <span class="mono">${rub(p.o.total)} ₽/т</span></div>`).join('')}
+ ${hireT?`<div style="margin-top:6px"><span class="pill p-warn">не успеваем своими</span> своим парком нужно ${needDays} дн. Добавить наёмный транспорт на <b class="mono">${rub(hireT)} т</b> с точки «${plan[plan.length-1].o.n}», доплата ${rub(hireCost)} ₽.</div>`:`<div style="margin-top:6px"><span class="pill p-ok">успеваем</span> своим парком за ${needDays} дн. из ${days}.</div>`}</div>
+ <div class="kpis">
+  <div class="kpi"><b>${rub(perT)}</b><span>₽/т на объекте</span></div>
+  <div class="kpi"><b>${rub(cost/1000)}</b><span>тыс. ₽ всего</span></div>
+  <div class="kpi"><b>${trips}</b><span>рейсов по 25 т</span></div>
+  <div class="kpi"><b style="color:${save>0?'var(--ok)':'var(--muted)'}">${save>0?'−'+rub(save/1000):'0'}</b><span>тыс. ₽ к варианту «ближайший карьер»</span></div>
+ </div>
+ <p class="note" style="margin:0">${plan.length>1?'Самая дешёвая точка не закрывает весь объём по остатку, поэтому заявка разбита на два источника.':'Весь объём закрывается одной точкой.'} Диспетчер подтверждает или правит вариант, после чего рейсы уходят водителям.</p>`;
+
+ const used=new Set(plan.map(p=>p.o.n));
+ $('#srcBody').innerHTML=opts.map(o=>`<tr><td>${o.n}${used.has(o.n)?' <span class="pill p-gold">в плане</span>':''}<div class="note">${o.t}${o.note?', '+o.note:''}</div></td><td class="r mono">${o.d} км</td><td class="r mono">${rub(o.price)}</td><td class="r mono">${rub(o.del)}</td><td class="r mono"><b>${rub(o.total)}</b></td><td class="r mono">${o.stock>9999?'без огр.':rub(o.stock)+' т'}</td></tr>`).join('');
+
+ const max=worst.total;
+ $('#bars').innerHTML=opts.map(o=>`<div class="br"><span>${o.n.replace('Ж/д станция','Ж/д')}</span><div class="track"><i style="width:${o.price/max*100}%;background:var(--muted)"></i><i style="width:${o.del/max*100}%;background:var(--gold)"></i></div><span class="mono" style="text-align:right">${rub(o.total)}</span></div>`).join('');
+}
+['obj','frac','vol','days','own'].forEach(id=>$('#'+id).addEventListener('input',calc));
+calc();
+
+/* ---- контроль рейсов (пример смены) ---- */
+const TR=[
+ ['А 412 КМ','Станция → ЖК, 3-й',25,15,49,'ok'],
+ ['А 412 КМ','Станция → ЖК, 4-й',25,55,48,'wait'],
+ ['В 718 ОР','Северный → ЖК, 1-й',25,20,137,'ok'],
+ ['В 718 ОР','Северный → ЖК, 2-й',21,25,139,'under'],
+ ['Е 305 ТН','Станция → ЖК, 2-й',25,18,71,'route'],
+ ['К 640 СА','Северный → ЖК, 1-й',25,70,136,'wait'],
+ ['М 221 ВК','Станция → ЖК, 3-й',25,12,48,'ok']
+];
+const ST={ok:['p-ok','по плану'],wait:['p-bad','долгое ожидание'],under:['p-warn','недогруз'],route:['p-warn','отклонение маршрута']};
+$('#cBody').innerHTML=TR.map(t=>`<tr><td class="mono">${t[0]}</td><td>${t[1]}</td><td class="r mono">${t[2]}</td><td class="r mono">${t[3]} мин</td><td class="r mono">${t[4]}</td><td><span class="pill ${ST[t[5]][0]}">${ST[t[5]][1]}</span></td></tr>`).join('');
+const avgWait=TR.reduce((s,t)=>s+t[3],0)/TR.length;
+$('#cK').innerHTML=`<div class="kpi"><b>${rub(1597)}</b><span>₽/т по плану</span></div>
+<div class="kpi"><b style="color:var(--warn)">${rub(1646)}</b><span>₽/т по факту смены</span></div>
+<div class="kpi"><b>${Math.round(avgWait)} мин</b><span>среднее ожидание погрузки</span></div>
+<div class="kpi"><b style="color:var(--warn)">4 т</b><span>недовезено за смену</span></div>`;
+$('#cAl').innerHTML=[
+ ['p-bad','Очередь на карьере «Северный»: ожидание до 70 минут. Перекинуть машину К 640 СА на станцию, там окно на погрузку через 15 минут.'],
+ ['p-warn','Е 305 ТН проехал на 23 км больше нормы на маршруте «станция → ЖК». Уточнить у водителя причину, похоже на объезд.'],
+ ['p-warn','В 718 ОР привёз 21 т вместо 25. Недогруз 4 т: дозаказать в следующий рейс и проверить накладную карьера.'],
+ ['p-gold','Фактическая себестоимость выше плана на 49 ₽/т из-за простоев. Если очередь на «Северном» повторится завтра, выгоднее сдвинуть отгрузку на станцию.']
+].map(a=>`<div class="al"><span class="pill ${a[0]}">${a[0]==='p-gold'?'итог':'сигнал'}</span><span>${a[1]}</span></div>`).join('');
+</script>
+</body>
+</html>

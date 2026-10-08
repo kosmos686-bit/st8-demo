@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>ST8 Учебный центр</title>
+<meta name="theme-color" content="#0a0a0a">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: мобильное приложение — экран + нижний таб-бар; от 820px боковая панель, контент шире. Палитра продуктов ST8 */
+:root{
+  --bg:#0a0a0a; --panel:#141310; --panel2:#1c1a15; --line:#2c2920;
+  --fg:#f1ede3; --muted:#a39d8c; --gold:#d4af37;
+  --ok:#4fbf7a; --warn:#e0a63a; --bad:#e2574c;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit}
+button:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.app{display:flex;min-height:100%}
+.side{display:none}
+.main{flex:1;min-width:0;padding-inline:16px;padding-block:0 96px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);display:flex;align-items:center;gap:10px;padding-block:12px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.top .back{background:none;border:0;color:var(--gold);font-size:22px;line-height:1;padding:4px 8px 4px 0;cursor:pointer}
+.top h1{font-size:17px;margin:0;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand{font:700 11px var(--sans);letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--panel);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabbar button{background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;padding:4px 0;cursor:pointer}
+.tabbar svg{width:22px;height:22px}
+.tabbar button.on{color:var(--gold)}
+
+@media (min-width:820px){
+  .tabbar{display:none}
+  .side{display:flex;flex-direction:column;gap:2px;width:250px;flex:0 0 250px;border-right:1px solid var(--line);padding:20px 12px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .side .brand{padding:0 10px 14px}
+  .side button{display:flex;align-items:center;gap:10px;background:none;border:0;color:var(--muted);font-size:14px;font-weight:600;padding:9px 10px;border-radius:8px;text-align:left;cursor:pointer}
+  .side button svg{width:18px;height:18px;flex:0 0 18px}
+  .side button.on{background:var(--panel2);color:var(--gold)}
+  .side .grp{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:14px 10px 4px;opacity:.7}
+  .main{padding-inline:32px;padding-block:0 48px}
+  .top .back{display:none}
+  .screen{max-width:880px}
+}
+
+.screen{display:flex;flex-direction:column;gap:14px}
+.lead{color:var(--muted);margin:0;max-width:64ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.demo-note{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--gold);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--fg);background:color-mix(in srgb,var(--gold) 6%,transparent)}
+.demo-note b{color:var(--gold)}
+.hero{display:flex;flex-direction:column;gap:6px}
+.hero h2{font-size:clamp(22px,5vw,30px);line-height:1.15;margin:0;text-wrap:balance}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media (min-width:620px){.tiles{grid-template-columns:repeat(3,1fr)}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;color:var(--fg);cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile:hover{border-color:var(--gold)}
+.tile svg{width:24px;height:24px;color:var(--gold)}
+.tile b{font-size:15px}
+.tile span{font-size:12px;color:var(--muted);line-height:1.4}
+.tile .tag{align-self:flex-start;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);border-radius:99px;padding:1px 7px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.kpi b{display:block;font:600 22px var(--mono);font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{background:var(--panel2);border:1px solid var(--line);color:var(--fg);font-size:13px;font-weight:500;padding:7px 11px;border-radius:99px;cursor:pointer}
+.seg button.on{border-color:var(--gold);color:var(--gold)}
+.meta{font:500 12px var(--mono);color:var(--muted)}
+.q{font-size:17px;font-weight:600;margin:0;text-wrap:pretty}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--fg);font-size:15px;padding:12px 13px;border-radius:12px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--panel2))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--panel2))}
+.opt:disabled{cursor:default}
+.explain{border-left:3px solid var(--gold);padding:8px 12px;background:var(--panel2);border-radius:0 10px 10px 0;font-size:14px}
+.btn{background:var(--gold);color:#14110a;border:0;font-weight:700;font-size:14px;padding:11px 16px;border-radius:10px;cursor:pointer}
+.btn.ghost{background:none;color:var(--gold);border:1px solid var(--gold)}
+.bar{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold);transition:transform .3s;transform-origin:left}
+.list{display:flex;flex-direction:column;gap:6px}
+.list>div{display:flex;justify-content:space-between;gap:10px;font-size:14px;align-items:center}
+.gauges{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (min-width:620px){.gauges{grid-template-columns:repeat(4,1fr)}}
+.g{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.g b{display:block;font:600 19px var(--mono);font-variant-numeric:tabular-nums}
+.g span{font-size:12px;color:var(--muted)}
+.g.alert{border-color:var(--bad)} .g.alert b{color:var(--bad)}
+.log{font:13px var(--mono);color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:540px}
+th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;vertical-align:top}
+.pill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.p-bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,transparent)}
+.p-warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.p-ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 16%,transparent)}
+.p-gold{color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent)}
+.msg{white-space:pre-wrap;font-size:14px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+select{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:9px;font-size:14px;max-width:100%}
+.note{font-size:12px;color:var(--muted)}
+.doc{background:#f7f5ef;color:#1b1a16;border-radius:8px;padding:22px 20px;font:13px/1.55 "Times New Roman",Georgia,serif;overflow-x:auto}
+.doc h3{text-align:center;font-size:15px;margin:0 0 4px}
+.doc .c{text-align:center;margin:0 0 12px}
+.doc table{min-width:480px}
+.doc th,.doc td{border:1px solid #888;color:#1b1a16;padding:4px 6px;text-transform:none;letter-spacing:0;font:12.5px "Times New Roman",Georgia,serif}
+.chat{display:flex;flex-direction:column;gap:8px;max-width:420px}
+.bub{background:var(--panel2);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:14px}
+.bub.me{align-self:flex-end;background:color-mix(in srgb,var(--gold) 18%,var(--panel2));border-color:var(--gold);border-radius:14px 14px 4px 14px}
+.bub .t{display:block;font:11px var(--mono);color:var(--muted);margin-top:4px;text-align:right}
+.hbar{display:grid;grid-template-columns:120px 1fr 44px;gap:8px;align-items:center;font-size:13px}
+.hbar .track{height:10px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.hbar .track i{display:block;height:100%}
+.inc h4{margin:0 0 4px;font-size:15px}
+.inc ol,.inc ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.cols{display:grid;gap:12px}
+@media (min-width:900px){.cols.two{grid-template-columns:1fr 1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <main class="main">
+    <div class="top"><button class="back" id="back" aria-label="Назад" hidden>‹</button><h1 id="ttl">Главная</h1><span class="brand">ST8 AI</span></div>
+    <div id="view"></div>
+  </main>
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const I={
+ home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+ quiz:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+ gnvp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l5 9H7z"/><path d="M12 11v11M8 22h8"/><circle cx="12" cy="16" r="2"/></svg>',
+ reg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="12" r="2"/><path d="M13 10h5M13 14h4"/></svg>',
+ more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>',
+ inc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg>',
+ sub:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21v-2a4 4 0 0 1 4-4h4"/><circle cx="9" cy="7" r="4"/><path d="M15 18l2 2 4-4"/></svg>',
+ doc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h7M9 17h7"/></svg>',
+ micro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>',
+ stat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+ lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'
+};
+const SCREENS=[
+ {id:'home',t:'Главная',i:'home',g:''},
+ {id:'quiz',t:'Тренажёр аттестации',s:'Тренажёр',i:'quiz',g:'Слушатель',d:'Тесты по 4 направлениям с разбором и слабыми темами'},
+ {id:'gnvp',t:'Сценарий ГНВП',s:'ГНВП',i:'gnvp',g:'Слушатель',d:'Пошаговая ситуация на буровой с показаниями'},
+ {id:'micro',t:'Обучение на смене',i:'micro',g:'Слушатель',d:'5 минут в день в мессенджере',tag:'новое'},
+ {id:'reg',t:'Реестр допусков',s:'Допуски',i:'reg',g:'Учебный центр',d:'Сроки удостоверений и автозапись на переобучение'},
+ {id:'sub',t:'Допуск подрядчиков',i:'sub',g:'Учебный центр',d:'Проверка удостоверений бригады до выхода на объект',tag:'новое'},
+ {id:'doc',t:'Протоколы',i:'doc',g:'Учебный центр',d:'Протокол проверки знаний за секунды'},
+ {id:'inc',t:'Разбор происшествий',i:'inc',g:'Руководитель',d:'Из акта расследования — урок для «дня мастера»',tag:'новое'},
+ {id:'stat',t:'Аналитика',i:'stat',g:'Руководитель',d:'Сдаваемость, проблемные темы, подразделения',tag:'новое'},
+ {id:'sec',t:'Безопасность данных',i:'lock',g:'Руководитель',d:'Как система живёт в контуре компании'}
+];
+const TABS=['home','quiz','gnvp','reg','more'];
+let cur='home',hist=[];
+
+function nav(){
+ // боковая панель
+ let h='<div class="brand">ST8 AI · Учебный центр</div>',g='';
+ SCREENS.forEach(s=>{if(s.g!==g&&s.g){h+=`<div class="grp">${s.g}</div>`;g=s.g}h+=`<button data-go="${s.id}" class="${cur===s.id?'on':''}">${I[s.i]}<span>${s.t}</span></button>`});
+ $('#side').innerHTML=h;
+ const inTab=TABS.includes(cur)?cur:'more';
+ $('#tabbar').innerHTML=TABS.map(id=>{const s=SCREENS.find(x=>x.id===id)||{t:'Ещё',i:'more'};return `<button data-go="${id}" class="${inTab===id?'on':''}">${I[s.i]}<span>${s.s||(id==='home'?'Главная':s.t)}</span></button>`}).join('');
+ document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+}
+function go(id,push=true){
+ if(push&&id!==cur)hist.push(cur);
+ cur=id;const s=SCREENS.find(x=>x.id===id);
+ $('#ttl').textContent=id==='more'?'Все модули':s.t;
+ $('#back').hidden=id==='home'||!hist.length;
+ $('#view').innerHTML='';const el=document.createElement('div');el.className='screen';$('#view').appendChild(el);
+ R[id](el);nav();window.scrollTo(0,0);
+}
+$('#back').onclick=()=>{const p=hist.pop()||'home';go(p,false)};
+
+const NOTE='<div class="demo-note"><b>Демо</b><span>Вопросы и данные условные. В рабочей версии тренажёр собирается из билетов и программ вашего центра, а реестр подключается к вашим учётным данным.</span></div>';
+
+const R={};
+/* ---------- HOME ---------- */
+R.home=el=>{
+ el.innerHTML=`<div class="hero"><span class="brand">Корпоративный учебный центр · нефтегаз</span><h2>AI-помощник учебного центра охраны труда и промбезопасности</h2>
+ <p class="lead">Промбез, работы на высоте, спасение на воде, ГНВП. Одно приложение для слушателя, преподавателя и руководителя: на телефоне, планшете и компьютере.</p></div>
+ ${NOTE}
+ <div class="kpis"><div class="kpi"><b>4</b><span>направления</span></div><div class="kpi"><b style="color:var(--bad)">7</b><span>допусков истекает за 30 дней</span></div><div class="kpi"><b>86%</b><span>сдаваемость с первого раза</span></div><div class="kpi"><b>12 c</b><span>на протокол группы</span></div></div>
+ <div class="tiles">${SCREENS.filter(s=>s.id!=='home').map(s=>`<button class="tile" data-go="${s.id}">${I[s.i]}${s.tag?`<span class="tag">${s.tag}</span>`:''}<b>${s.t}</b><span>${s.d}</span></button>`).join('')}</div>`;
+};
+R.more=el=>{el.innerHTML=`<p class="lead">Все модули демо. Начать пилот можно с любого одного.</p><div class="tiles">${SCREENS.filter(s=>s.id!=='home').map(s=>`<button class="tile" data-go="${s.id}">${I[s.i]}${s.tag?`<span class="tag">${s.tag}</span>`:''}<b>${s.t}</b><span>${s.d}</span></button>`).join('')}</div>`};
+
+/* ---------- QUIZ ---------- */
+const BANK={
+ 'Промбез':[
+  {t:'Основы промбезопасности',q:'Какой федеральный закон устанавливает требования к опасным производственным объектам?',o:['116-ФЗ «О промышленной безопасности опасных производственных объектов»','184-ФЗ «О техническом регулировании»','426-ФЗ «О специальной оценке условий труда»'],a:0,e:'Базовый закон для ОПО — 116-ФЗ.'},
+  {t:'Аттестация персонала',q:'Как часто руководители и специалисты ОПО проходят аттестацию по промбезопасности?',o:['Ежегодно','Не реже одного раза в 5 лет','Только при приёме на работу'],a:1,e:'Периодическая аттестация — не реже одного раза в пять лет, плюс внеочередная в установленных случаях.'},
+  {t:'Аттестация персонала',q:'Как проходит тестирование при аттестации по промышленной безопасности?',o:['Устно у работодателя','Через единый портал тестирования','Только письменно в учебном центре'],a:1,e:'Тестирование идёт через единый портал тестирования. Учебный центр готовит к нему, и сюда встаёт AI-тренажёр.'}
+ ],
+ 'Высота':[
+  {t:'Определения',q:'С какой высоты работы относятся к работам на высоте при опасности падения?',o:['1,3 м','1,8 м','2,5 м'],a:1,e:'Работы на высоте — при опасности падения работника с высоты 1,8 м и более.'},
+  {t:'Группы допуска',q:'Сколько групп по безопасности работ на высоте предусмотрено Правилами?',o:['Две','Три','Пять'],a:1,e:'Три группы: работники; мастера и бригадиры; ответственные за организацию и проведение работ.'},
+  {t:'Спасение и эвакуация',q:'Что должно быть предусмотрено до начала работ со страховочной системой?',o:['План мероприятий по эвакуации и спасению','Только аптечка','Ничего, если высота меньше 5 м'],a:0,e:'План эвакуации и спасения обязателен. Бот может прогонять ситуацию «человек завис на страховке».'}
+ ],
+ 'Вода':[
+  {t:'Подход к пострадавшему',q:'С какой стороны безопаснее подплывать к тонущему в панике?',o:['Спереди, лицом к лицу','Сзади','Сбоку на расстоянии руки'],a:1,e:'Подход сзади снижает риск захвата спасателя.'},
+  {t:'Первая помощь',q:'Пострадавший извлечён из воды, признаков дыхания нет. Что делать?',o:['Вызвать 112 и начать сердечно-лёгочную реанимацию','Сначала «вылить воду», держа вниз головой','Укутать и ждать скорую'],a:0,e:'Вызов помощи и СЛР. Попытки удалить воду отнимают минуты.'},
+  {t:'Средства спасения',q:'До пострадавшего можно дотянуться с берега. Что первым?',o:['Сразу плыть самому','Подручное средство: шест, круг, верёвку','Ждать спасателей'],a:1,e:'Принцип «дотянись — брось — плыви»: в воду только если другое не работает.'}
+ ],
+ 'ГНВП':[
+  {t:'Признаки проявления',q:'Что относится к прямым признакам начала ГНВП?',o:['Рост объёма раствора в приёмной ёмкости','Снижение шума насосов','Повышение температуры воздуха'],a:0,e:'Прирост объёма в приёмной ёмкости — один из главных прямых признаков.'},
+  {t:'Признаки проявления',q:'Насосы остановлены, а из скважины продолжается перелив. Что это значит?',o:['Норма после циркуляции','Возможное начало проявления, нужна герметизация','Сбой датчика'],a:1,e:'Перелив при остановленной циркуляции — прямой признак. Действовать по ПЛА.'},
+  {t:'Первичные действия',q:'Что делает вахта после обнаружения признаков ГНВП?',o:['Ускоряет подъём инструмента','Герметизирует устье по ПЛА и докладывает','Увеличивает подачу насосов'],a:1,e:'Остановить работы, загерметизировать устье, доложить, фиксировать давления.'}
+ ]
+};
+let dir='Промбез',qi=0,score=0,miss={};
+R.quiz=el=>{
+ el.innerHTML=`<p class="lead">Слушатель отвечает, бот сразу объясняет ответ и копит слабые темы. Перед экзаменом гоняет именно по ним.</p>${NOTE}
+ <div class="seg" id="dirSeg"></div>
+ <div class="panel stack"><div class="row" style="justify-content:space-between"><span class="meta" id="qMeta"></span><span class="meta" id="qScore"></span></div>
+ <div class="bar"><i id="qBar" style="transform:scaleX(0)"></i></div><p class="q" id="qText"></p><div class="opts" id="qOpts"></div>
+ <div class="explain" id="qExp" hidden></div><div class="row"><button class="btn" id="qNext" hidden>Дальше</button></div></div>
+ <div class="panel stack" id="weakBox" hidden><strong>Что подтянуть перед экзаменом</strong><div class="list" id="weakList"></div><p class="note">Бот соберёт следующий тест из слабых тем и напомнит слушателю в мессенджере.</p></div>`;
+ qi=0;score=0;miss={};renderDirs();renderQ();
+};
+function renderDirs(){$('#dirSeg').innerHTML=Object.keys(BANK).map(d=>`<button class="${d===dir?'on':''}" data-d="${d}">${d}</button>`).join('');
+ $('#dirSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>{dir=b.dataset.d;qi=0;score=0;miss={};renderDirs();renderQ()})}
+function renderQ(){
+ const L=BANK[dir];$('#weakBox').hidden=true;if(qi>=L.length)return finishQ();
+ const Q=L[qi];$('#qMeta').textContent=`Вопрос ${qi+1} из ${L.length} · ${Q.t}`;$('#qScore').textContent=`Верно: ${score}`;
+ $('#qBar').style.transform=`scaleX(${qi/L.length})`;$('#qText').textContent=Q.q;$('#qExp').hidden=true;
+ const nb=$('#qNext');nb.hidden=true;nb.onclick=()=>{qi++;renderQ()};$('#qOpts').innerHTML='';
+ Q.o.forEach((o,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;
+  b.onclick=()=>{[...$('#qOpts').children].forEach((x,j)=>{x.disabled=true;if(j===Q.a)x.classList.add('right')});
+   if(i===Q.a)score++;else{b.classList.add('wrong');miss[Q.t]=(miss[Q.t]||0)+1}
+   $('#qExp').textContent=(i===Q.a?'Верно. ':'Неверно. ')+Q.e;$('#qExp').hidden=false;nb.hidden=false;nb.textContent=qi+1<L.length?'Дальше':'Итог';$('#qScore').textContent=`Верно: ${score}`};
+  $('#qOpts').appendChild(b)});
+}
+function finishQ(){
+ const L=BANK[dir];$('#qBar').style.transform='scaleX(1)';$('#qMeta').textContent=`${dir}: тест завершён`;
+ $('#qText').textContent=`Результат ${score} из ${L.length}. ${score===L.length?'Готов по этим темам.':'Есть темы для повторения.'}`;
+ $('#qOpts').innerHTML='';$('#qExp').hidden=true;const nb=$('#qNext');nb.hidden=false;nb.textContent='Пройти ещё раз';nb.onclick=()=>{qi=0;score=0;miss={};renderQ()};
+ const topics=[...new Set(L.map(x=>x.t))];
+ $('#weakList').innerHTML=topics.map(t=>{const m=miss[t]||0;return `<div><span>${t}</span><span class="pill ${m?'p-bad':'p-ok'}">${m?'повторить':'освоено'}</span></div>`}).join('');$('#weakBox').hidden=false;
+}
+
+/* ---------- GNVP ---------- */
+const STEPS=[
+ {g:{vol:'+0,0',flow:'норма',sp:'—',ann:'—'},log:'02:10 Бурение, циркуляция в норме.',q:'Объём в приёмной ёмкости вырос на 1,2 м³ за 10 минут. Ваше первое действие?',
+  o:['Продолжить бурение и понаблюдать 30 минут','Остановить бурение, приподнять инструмент над забоем, остановить насосы и проверить на перелив','Увеличить подачу насосов'],a:1,
+  e:'Прирост объёма — прямой признак. Работы останавливают и проверяют скважину на перелив.',alert:{vol:'+1,2'}},
+ {g:{vol:'+1,6',flow:'перелив',sp:'—',ann:'—'},log:'02:21 Насосы остановлены. Перелив продолжается.',q:'Насосы стоят, а из скважины идёт перелив. Что дальше?',
+  o:['Загерметизировать устье по ПЛА и доложить','Начать подъём инструмента','Слить раствор и ждать'],a:0,
+  e:'Перелив при остановленной циркуляции подтверждает проявление. Устье закрывают по ПЛА, докладывают руководителю работ.',alert:{vol:'+1,6',flow:'перелив'}},
+ {g:{vol:'+1,8',flow:'закрыто',sp:'4,2 МПа',ann:'6,1 МПа'},log:'02:24 Устье закрыто. Давления стабилизируются.',q:'Скважина закрыта. Что вахта фиксирует в первую очередь?',
+  o:['Ничего, ждать указаний','Давления в трубах и затрубье, объём прироста, время','Только время закрытия'],a:1,
+  e:'Давления и объём прироста нужны для расчёта глушения. Бот сверяет записи слушателя с эталоном.',alert:{sp:'4,2 МПа',ann:'6,1 МПа'}}
+];
+let si=0,sOk=0;
+R.gnvp=el=>{
+ el.innerHTML=`<p class="lead">Бот моделирует обстановку на буровой, слушатель принимает решения, бот разбирает каждое. Это подготовка к практике на тренажёре, а не её замена.</p>${NOTE}
+ <div class="gauges" id="gauges"></div>
+ <div class="cols two"><div class="panel stack"><span class="meta" id="sStep"></span><p class="q" id="sText"></p><div class="opts" id="sOpts"></div><div class="explain" id="sExp" hidden></div>
+ <div class="row"><button class="btn" id="sNext" hidden>Дальше</button><button class="btn ghost" id="sReset" hidden>Пройти заново</button></div></div>
+ <div class="panel"><strong style="display:block;margin-bottom:6px">Журнал вахты</strong><div class="log" id="sLog"></div></div></div>`;
+ si=0;sOk=0;$('#sNext').onclick=()=>{si++;renderS()};$('#sReset').onclick=()=>{si=0;sOk=0;$('#sLog').innerHTML='';renderS()};renderS();
+};
+function gauges(s,al){const G=[['vol','Прирост в ёмкости, м³'],['flow','Выход из скважины'],['sp','Давление в трубах'],['ann','Давление в затрубье']];
+ $('#gauges').innerHTML=G.map(([k,l])=>`<div class="g ${al&&al[k]?'alert':''}"><b>${s[k]}</b><span>${l}</span></div>`).join('')}
+function renderS(){
+ if(si>=STEPS.length){$('#sStep').textContent='Разбор завершён';$('#sText').textContent=`Верных решений: ${sOk} из ${STEPS.length}. ${sOk===STEPS.length?'Порядок действий отработан.':'Бот предложит повторить с другими вводными.'}`;$('#sOpts').innerHTML='';$('#sExp').hidden=true;$('#sNext').hidden=true;$('#sReset').hidden=false;return}
+ const S=STEPS[si];gauges(S.g,si>0?STEPS[si-1].alert:null);
+ const d=document.createElement('div');d.textContent=S.log;$('#sLog').appendChild(d);
+ $('#sStep').textContent=`Шаг ${si+1} из ${STEPS.length}`;$('#sText').textContent=S.q;$('#sExp').hidden=true;$('#sNext').hidden=true;$('#sReset').hidden=true;$('#sOpts').innerHTML='';
+ S.o.forEach((o,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;
+  b.onclick=()=>{[...$('#sOpts').children].forEach((x,j)=>{x.disabled=true;if(j===S.a)x.classList.add('right')});
+   if(i===S.a)sOk++;else b.classList.add('wrong');gauges(Object.assign({},S.g,S.alert),S.alert);
+   $('#sExp').textContent=(i===S.a?'Верно. ':'Ошибка. ')+S.e;$('#sExp').hidden=false;$('#sNext').hidden=false};
+  $('#sOpts').appendChild(b)});
+}
+
+/* ---------- MICRO ---------- */
+R.micro=el=>{
+ el.innerHTML=`<p class="lead">Каждый день один короткий вопрос или ситуация в мессенджер, без отрыва от вахты. Кто ошибается, тому бот присылает разбор и повтор через пару дней. Так знания не выветриваются между переаттестациями.</p>${NOTE}
+ <div class="cols two"><div class="panel"><div class="chat">
+  <div class="bub">Доброе утро! Вопрос дня, ГНВП (1 мин):<br>При подъёме инструмента объём долива меньше расчётного. О чём это говорит?<span class="t">07:30</span></div>
+  <div class="bub me">Возможно поступление флюида в скважину<span class="t">07:41</span></div>
+  <div class="bub">Верно ✅ Недолив при подъёме — признак возможного проявления. Подъём остановить и проверить на перелив.<br>Серия: 12 дней подряд.<span class="t">07:41</span></div>
+ </div></div>
+ <div class="panel stack"><strong>Что видит учебный центр</strong>
+  <div class="list"><div><span>Участвуют в рассылке</span><b class="mono">418 чел.</b></div><div><span>Отвечают ежедневно</span><b class="mono">71%</b></div><div><span>Самая слабая тема недели</span><span class="pill p-warn">долив при подъёме</span></div><div><span>Рекомендовано на доп. занятие</span><b class="mono">23 чел.</b></div></div>
+  <p class="note">Работает в Telegram, MAX или корпоративном мессенджере, через бота или SMS для рабочих без смартфона.</p></div></div>`;
+};
+
+/* ---------- REGISTRY ---------- */
+const TODAY=new Date(2026,9,8);
+const PEOPLE=[
+ ['Буровой цех №2','Иванов С. П.','ГНВП','2026-10-21'],['Буровой цех №2','Петров А. В.','ГНВП','2026-10-30'],['Буровой цех №2','Ахметов Р. Ф.','ГНВП','2026-09-28'],['Буровой цех №2','Сидоренко Д. И.','Работы на высоте, гр. 2','2026-11-14'],
+ ['ЦДНГ-3','Кузнецов М. А.','Промбез А.1, Б.2','2026-10-25'],['ЦДНГ-3','Волков Е. Н.','Работы на высоте, гр. 1','2026-10-18'],['ЦДНГ-3','Морозова Т. С.','Работы на высоте, гр. 3','2026-12-20'],['ЦДНГ-3','Зайцев И. Г.','Промбез А.1','2027-06-15'],
+ ['Цех ППД','Лебедев К. О.','Спасение на воде','2026-11-02'],['Цех ППД','Орлов П. Р.','Спасение на воде','2026-10-25'],['Цех ППД','Николаев В. В.','Промбез Б.2','2026-11-28'],['Цех ППД','Фёдоров А. А.','ГНВП','2027-01-19']
+];
+const days=d=>Math.round((new Date(d)-TODAY)/864e5);
+const st=d=>{const n=days(d);return n<0?['p-bad','просрочено']:n<=30?['p-bad',`через ${n} дн.`]:n<=60?['p-warn',`через ${n} дн.`]:['p-ok','действует']};
+const fmt=d=>d.split('-').reverse().join('.');
+R.reg=el=>{
+ const units=[...new Set(PEOPLE.map(p=>p[0]))];
+ el.innerHTML=`<p class="lead">Система знает, у кого в каком подразделении когда истекает допуск, заранее уведомляет руководителя и записывает людей в ближайшую группу.</p>${NOTE}
+ <div class="kpis" id="kpis"></div>
+ <div class="row"><label for="fUnit" class="note">Подразделение</label><select id="fUnit"><option value="">Все</option>${units.map(c=>`<option>${c}</option>`).join('')}</select></div>
+ <div class="tbl panel" style="padding:4px 8px"><table><thead><tr><th>Сотрудник</th><th>Направление</th><th>Действует до</th><th>Статус</th></tr></thead><tbody id="regBody"></tbody></table></div>
+ <div class="row"><button class="btn" id="mkMsg">Подготовить уведомление руководителю</button></div><div class="msg" id="msgOut" hidden></div>`;
+ const draw=()=>{const c=$('#fUnit').value;const L=PEOPLE.filter(p=>!c||p[0]===c).sort((a,b)=>days(a[3])-days(b[3]));
+  const ov=L.filter(p=>days(p[3])<0).length,m1=L.filter(p=>days(p[3])>=0&&days(p[3])<=30).length,m2=L.filter(p=>days(p[3])>30&&days(p[3])<=60).length;
+  $('#kpis').innerHTML=`<div class="kpi"><b style="color:var(--bad)">${ov}</b><span>просрочено</span></div><div class="kpi"><b style="color:var(--bad)">${m1}</b><span>истекает за 30 дней</span></div><div class="kpi"><b style="color:var(--warn)">${m2}</b><span>за 31–60 дней</span></div>`;
+  $('#regBody').innerHTML=L.map(p=>{const[s,l]=st(p[3]);return `<tr><td>${p[1]}${c?'':`<div class="note">${p[0]}</div>`}</td><td>${p[2]}</td><td>${fmt(p[3])}</td><td><span class="pill ${s}">${l}</span></td></tr>`}).join('');$('#msgOut').hidden=true};
+ $('#fUnit').onchange=draw;draw();
+ $('#mkMsg').onclick=()=>{const c=$('#fUnit').value||units[0];if(!$('#fUnit').value){$('#fUnit').value=c;draw()}
+  const L=PEOPLE.filter(p=>p[0]===c&&days(p[3])<=60).sort((a,b)=>days(a[3])-days(b[3]));const by={};L.forEach(p=>(by[p[2]]=by[p[2]]||[]).push(p));
+  $('#msgOut').textContent=`Кому: руководитель, ${c}\n\nУ ${L.length} сотрудников в ближайшие 60 дней заканчивается срок допуска:\n${Object.entries(by).map(([d,ps])=>`• ${d}: ${ps.map(p=>`${p[1]} (до ${fmt(p[3])})`).join(', ')}`).join('\n')}\n\nПредварительно записали в группы: ГНВП с 20.10, высота с 27.10. Подтвердите состав или предложите замену до пятницы.\n\n— Учебный центр`;$('#msgOut').hidden=false};
+};
+
+/* ---------- CONTRACTORS ---------- */
+const CREW=[
+ ['Гаврилов Н. С.','бурильщик','ГНВП','2027-02-11','ok'],['Соколов Д. А.','пом. бурильщика','ГНВП','2026-09-30','exp'],['Ершов В. М.','монтажник','Высота, гр. 1','2027-04-03','ok'],
+ ['Тарасов И. И.','мастер','Высота, гр. 2','2026-10-15','soon'],['Белов Р. К.','монтажник','—','','none'],['Карпов А. Н.','мастер','Промбез Б.2','2028-01-20','ok']
+];
+R.sub=el=>{
+ el.innerHTML=`<p class="lead">Подрядная организация загружает список бригады и сканы удостоверений. AI распознаёт документы, сверяет направления и сроки с требованиями к работам и до выхода на объект показывает, кого нельзя допускать.</p>${NOTE}
+ <div class="panel stack"><div class="row" style="justify-content:space-between"><div><b>ООО «БурСервис-Подряд» (пример)</b><div class="note">Бригада на ремонт скважины, куст 14 · 6 человек · выход 12.10</div></div><span class="pill p-bad">допуск не готов</span></div>
+ <div class="tbl"><table><thead><tr><th>Сотрудник</th><th>Должность</th><th>Удостоверение</th><th>Действует до</th><th>Проверка AI</th></tr></thead><tbody>
+ ${CREW.map(c=>{const m={ok:['p-ok','соответствует'],exp:['p-bad','просрочено'],soon:['p-warn','истекает до конца работ'],none:['p-bad','нет удостоверения по высоте']}[c[4]];return `<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td>${c[3]?fmt(c[3]):'—'}</td><td><span class="pill ${m[0]}">${m[1]}</span></td></tr>`}).join('')}
+ </tbody></table></div>
+ <div class="msg">Подрядчику отправлено: 3 сотрудника не могут быть допущены (Соколов, Тарасов, Белов). Ближайшие группы в учебном центре: ГНВП с 20.10, высота с 13.10. Записать?</div></div>
+ <p class="note">Для учебного центра это ещё и поток заявок: подрядчик получает отказ в допуске и сразу предложение пройти обучение.</p>`;
+};
+
+/* ---------- DOCS ---------- */
+const GROUPS={
+ 'ГНВП-24 · 06.10–08.10.2026':{prog:'Контроль скважины. Управление скважиной при газонефтеводопроявлениях',ppl:[['Иванов Сергей Петрович','бурильщик','Буровой цех №2','сдал'],['Ахметов Ринат Фаритович','помощник бурильщика','Буровой цех №2','сдал'],['Гусев Олег Ильич','помощник бурильщика','Буровой цех №2','не сдал']]},
+ 'ВЫС-41 · 01.10–03.10.2026':{prog:'Безопасные методы и приёмы выполнения работ на высоте (2 группа)',ppl:[['Волков Евгений Николаевич','мастер','ЦДНГ-3','сдал'],['Романов Илья Сергеевич','бригадир','ЦДНГ-3','сдал']]}
+};
+R.doc=el=>{
+ el.innerHTML=`<p class="lead">Результаты экзамена уже в системе, протокол собирается за секунды. Преподаватель проверяет и подписывает, сроки сразу попадают в реестр допусков.</p>${NOTE}
+ <div class="row"><label for="fGroup" class="note">Группа</label><select id="fGroup">${Object.keys(GROUPS).map(g=>`<option>${g}</option>`).join('')}</select></div><div id="docOut"></div>`;
+ const mk=()=>{const k=$('#fGroup').value,G=GROUPS[k],num=k.split(' ')[0];
+  $('#docOut').innerHTML=`<div class="doc"><h3>ПРОТОКОЛ № ${num}</h3><p class="c">заседания комиссии по проверке знаний<br>по программе: «${G.prog}»<br>от 08.10.2026</p>
+  <table><thead><tr><th>№</th><th>ФИО</th><th>Должность</th><th>Подразделение</th><th>Результат</th><th>№ удостоверения</th></tr></thead><tbody>
+  ${G.ppl.map((p,i)=>`<tr><td>${i+1}</td><td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td><td>${p[3]==='сдал'?num+'/'+String(i+1).padStart(3,'0'):'—'}</td></tr>`).join('')}
+  </tbody></table><p style="margin-top:14px">Председатель комиссии ______________<br>Члены комиссии ______________</p></div>
+  <p class="note" style="margin-top:8px">В рабочей версии выгрузка в Word и PDF по шаблону центра. Тому, кто не сдал, бот назначает пересдачу.</p>`};
+ $('#fGroup').onchange=mk;mk();
+};
+
+/* ---------- INCIDENTS ---------- */
+const INC={
+ 'Падение с высоты при монтаже (пример)':{when:'Куст 7, монтаж площадки обслуживания',chain:['Работник перестегнул карабин, не закрепив второй строп','Анкерная точка не была указана в наряде-допуске','Мастер находился на другом участке'],cause:'Нарушена непрерывность страховки при перемещении; наряд-допуск оформлен без схемы анкерных точек.',do:['Стропы с двумя карабинами, перестёжка только по одному','Схема анкерных точек в каждом наряде на высоте','Проверка мастером перед началом работ'],qs:3},
+ 'Перелив при подъёме инструмента (пример)':{when:'Буровая, подъём КНБК',chain:['Долив при подъёме не контролировался по объёму','Признак недолива заметили поздно','Скважина загерметизирована с задержкой'],cause:'Нет контроля долива по мерной ёмкости на каждой свече.',do:['Контроль долива по мерной ёмкости','Остановка подъёма при расхождении объёма','Отработка сигнала тревоги на учебной тревоге'],qs:3}
+};
+R.inc=el=>{
+ el.innerHTML=`<p class="lead">Загружаете акт расследования, AI делает из него короткий урок для «дня мастера»: хронологию, причины, что делать иначе и вопросы для проверки. Урок можно сразу разослать мастерам.</p>${NOTE}
+ <div class="row"><label for="fInc" class="note">Акт</label><select id="fInc">${Object.keys(INC).map(k=>`<option>${k}</option>`).join('')}</select></div><div id="incOut"></div>`;
+ const mk=()=>{const k=$('#fInc').value,X=INC[k];
+  $('#incOut').innerHTML=`<div class="cols two"><div class="panel stack inc"><span class="pill p-gold" style="align-self:flex-start">урок для «дня мастера»</span><h4>${k.replace(' (пример)','')}</h4><span class="note">${X.when}</span>
+   <div><b>Как развивалось</b><ol>${X.chain.map(c=>`<li>${c}</li>`).join('')}</ol></div><div><b>Причина</b><p style="margin:4px 0 0;font-size:14px">${X.cause}</p></div></div>
+   <div class="panel stack inc"><div><b>Что делаем иначе</b><ul>${X.do.map(c=>`<li>${c}</li>`).join('')}</ul></div>
+   <div class="list"><div><span>Вопросов для проверки</span><b class="mono">${X.qs}</b></div><div><span>Разослано мастерам</span><b class="mono">64</b></div><div><span>Подтвердили ознакомление</span><b class="mono">51</b></div></div>
+   <button class="btn" type="button" id="incSend">Разослать в подразделения</button><span class="note" id="incOk" hidden>Готово: урок отправлен в рассылку демо.</span></div></div>`;
+  $('#incSend').onclick=()=>$('#incOk').hidden=false};
+ $('#fInc').onchange=mk;mk();
+};
+
+/* ---------- STATS ---------- */
+R.stat=el=>{
+ const D=[['Промбез',91],['Высота',88],['Вода',94],['ГНВП',72]];
+ const T=[['Долив при подъёме',38],['Анкерные точки',29],['Порядок герметизации',24],['Аттестационные области',17]];
+ const col=v=>v>=85?'var(--ok)':v>=75?'var(--warn)':'var(--bad)';
+ el.innerHTML=`<p class="lead">Руководитель видит, где люди готовы, а где риск, и куда направить преподавателей.</p>${NOTE}
+ <div class="kpis"><div class="kpi"><b>1 246</b><span>обучено за 9 месяцев</span></div><div class="kpi"><b>86%</b><span>сдали с первого раза</span></div><div class="kpi"><b style="color:var(--bad)">7</b><span>допусков истекает за 30 дней</span></div><div class="kpi"><b>0</b><span>просроченных у подрядчиков на объектах</span></div></div>
+ <div class="cols two"><div class="panel stack"><strong>Сдаваемость с первого раза</strong>${D.map(d=>`<div class="hbar"><span>${d[0]}</span><div class="track"><i style="width:${d[1]}%;background:${col(d[1])}"></i></div><span class="mono" style="text-align:right">${d[1]}%</span></div>`).join('')}<p class="note">Шкала 0–100%.</p></div>
+ <div class="panel stack"><strong>Темы с наибольшим числом ошибок</strong>${T.map(t=>`<div class="hbar"><span>${t[0]}</span><div class="track"><i style="width:${t[1]/40*100}%;background:var(--gold)"></i></div><span class="mono" style="text-align:right">${t[1]}%</span></div>`).join('')}<p class="note">Доля ошибочных ответов, шкала 0–40%.</p></div></div>
+ <div class="panel"><b>Вывод AI.</b> ГНВП отстаёт по сдаваемости из-за темы долива при подъёме. Предлагаю добавить её в рассылку «обучение на смене» на две недели и провести практику на тренажёре для Бурового цеха №2.</div>`;
+};
+
+/* ---------- SECURITY ---------- */
+R.sec=el=>{
+ el.innerHTML=`<p class="lead">Для крупной компании главный вопрос — где лежат данные сотрудников. Варианты размещения подбираются под требования службы безопасности.</p>
+ <div class="cols two"><div class="panel stack"><strong>Варианты размещения</strong><div class="list"><div><span>Серверы компании (закрытый контур)</span><span class="pill p-gold">для корпорации</span></div><div><span>Российское облако</span><span class="pill p-ok">быстрый старт</span></div><div><span>Пилот на обезличенных данных</span><span class="pill p-ok">без доступа к ПДн</span></div></div></div>
+ <div class="panel stack"><strong>Принципы</strong><ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px"><li>Персональные данные обрабатываются в РФ</li><li>Можно работать на российских языковых моделях</li><li>Роли и права: слушатель видит только своё, руководитель — своё подразделение</li><li>Журнал действий для аудита</li></ul></div></div>
+ <div class="panel"><b>Как начать.</b> Пилот на одном направлении и одном подразделении, на обезличенных данных. Это не требует согласований с ИБ на старте и показывает результат за 4–6 недель.</div>`;
+};
+
+go('home',false);
+</script>
+</body>
+</html>
